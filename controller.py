@@ -103,6 +103,8 @@ class Controller(object):
         self.alert_type = config['alerts']['alert_type']
         self.ttw = config['alerts']['time_to_wait']
         if self.alert_type is not None:
+            if isinstance(self.alert_type, unicode):
+                self.alert_type = self.alert_type.encode('utf-8')
             if isinstance(self.alert_type, str):
                 self.alert_type = self.alert_type.split(",")
             for alert in self.alert_type:
@@ -143,21 +145,21 @@ class Controller(object):
                     self.update_ifttt(door.name, new_state, door.ifttt_event_open, door.ifttt_event_close)
             if new_state == 'open' and not door.msg_sent and time.time() - door.open_time >= self.ttw:
                 if self.use_alerts:
-                    title = "%s's garage door open" % door.name
+                    title = "%s is open" % door.name
                     if self.ttw == 0:
-                        message = "%s's garage door just opened" % (door.name)
+                        message = "%s just opened" % (door.name)
                     else:
                         etime = elapsed_time(int(time.time() - door.open_time))
-                        message = "%s's garage door has been open for %s" % (door.name, etime)
+                        message = "%s has been open for %s" % (door.name, etime)
                     self.send_msg(door, title, message)
                     door.msg_sent = True
 
             if new_state == 'closed':
                 if self.use_alerts:
                     if door.msg_sent == True:
-                        title = "%s's garage doors closed" % door.name
+                        title = "%s is closed" % door.name
                         etime = elapsed_time(int(time.time() - door.open_time))
-                        message = "%s's garage door is now closed after %s "% (door.name, etime)
+                        message = "%s is closed after %s "% (door.name, etime)
                         self.send_msg(door, title, message)
                 door.open_time = time.time()
                 door.msg_sent = False
